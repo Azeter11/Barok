@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Marketplace Daur Ulang</title>
+    <link rel="stylesheet" href="admin.css"> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-wrapper">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>Admin DaurUlang</h2>
+            </div>
+            <div class="sidebar-nav">
+                <ul>
+                    <li><a href="#dashboard" class="nav-link active"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                    <li><a href="#manage-products" class="nav-link"><i class="fas fa-box"></i> Kelola Produk</a></li>
+                    <li><a href="#manage-transactions" class="nav-link"><i class="fas fa-shopping-cart"></i> Transaksi</a></li>
+                    <li><a href="/" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div class="user-admin">
+                    <span id="adminName">Administrator</span>
+                    <i class="fas fa-user-circle fa-2x"></i>
+                </div>
+            </div>
+
+            <section id="dashboard" class="admin-section">
+                <div class="section-header">
+                    <h1>Dashboard Overview</h1>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-green"><i class="fas fa-box"></i></div>
+                        <div class="stat-info">
+                            <h3>Total Produk</h3>
+                            <p id="total-products">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon bg-blue"><i class="fas fa-shopping-bag"></i></div>
+                        <div class="stat-info">
+                            <h3>Total Transaksi</h3>
+                            <p id="total-transactions">0</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="manage-products" class="admin-section" style="display:none;">
+                <div class="section-header">
+                    <h2>Manajemen Produk</h2>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Gambar</th>
+                                <th>Nama Produk</th>
+                                <th>Penjual</th>
+                                <th>Kategori</th>
+                                <th>Harga</th>
+                                <th>Stok</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminProductsBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="manage-transactions" class="admin-section" style="display:none;">
+                <div class="section-header">
+                    <h2>Riwayat Transaksi</h2>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Produk</th>
+                                <th>Pembeli</th>
+                                <th>Jumlah</th>
+                                <th>Total Harga</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTransactionsBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Marketplace Daur Ulang</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <i class="fas fa-recycle login-icon"></i>
+                <h1>SDG12 Marketplace</h1>
+                <p class="subtitle">Responsible Consumption & Production</p>
+            </div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username"><i class="fas fa-user"></i> Username</label>
+                    <input type="text" id="username" name="username" required 
+                           placeholder="Masukkan username">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password"><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" id="password" name="password" required 
+                           placeholder="Masukkan password">
+                </div>
+                
+                <button type="submit" class="btn-login">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+                
+               <!-- Di dalam form login, sebelum closing tag form -->
+                <div class="register-link">
+                    <p>Belum punya akun? <a href="/register">Daftar di sini</a></p>
+                </div>
+            </form>
+        </div>
+        
+        <div class="login-footer">
+            <p>© 2024 Marketplace Barang Daur Ulang - Mendukung SDG12</p>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    window.location.href = '/menu';
+                } else {
+                    alert('Login gagal: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat login');
+            }
+        });
+    </script>
+</body>
+</html>

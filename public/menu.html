@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace Daur Ulang - SDG12</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header & Navigation -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-recycle"></i>
+                <h1>SDG12 • Marketplace Barang Daur Ulang</h1>
+            </div>
+            <nav class="navbar">
+                <ul>
+                    <li><a href="#beranda" class="nav-link active"><i class="fas fa-home"></i> Beranda</a></li>
+                    <li><a href="#marketplace" class="nav-link"><i class="fas fa-store"></i> Marketplace</a></li>
+                    <li><a href="#tambah-produk" class="nav-link"><i class="fas fa-plus-circle"></i> Tambah Produk</a></li>
+                    <li><a href="#keranjang" class="nav-link"><i class="fas fa-shopping-cart"></i> Keranjang</a></li>
+                    <li><a href="#laporan" class="nav-link"><i class="fas fa-chart-bar"></i> Laporan</a></li>
+                </ul>
+            </nav>
+            <div class="user-info">
+                <span id="userName"></span>
+                <button onclick="logout()" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="beranda" class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h2>Responsible Consumption & Production (SDG12)</h2>
+                <p>Bergabunglah dalam gerakan daur ulang untuk menciptakan masa depan yang lebih berkelanjutan. 
+                   Marketplace ini memungkinkan Anda menjual dan membeli barang daur ulang dengan mudah.</p>
+                <div class="hero-buttons">
+                    <a href="#marketplace" class="btn-primary">
+                        <i class="fas fa-store"></i> Jelajahi Marketplace
+                    </a>
+                    <a href="#tambah-produk" class="btn-secondary">
+                        <i class="fas fa-plus-circle"></i> Jual Barang Daur Ulang
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Info Section -->
+    <section class="info-section">
+        <div class="container">
+            <div class="info-grid">
+                <div class="info-card">
+                    <i class="fas fa-globe-americas"></i>
+                    <h3>Apa itu SDG12?</h3>
+                    <p>SDG12 adalah Tujuan Pembangunan Berkelanjutan ke-12 yang fokus pada pola konsumsi dan produksi yang bertanggung jawab untuk mengurangi limbah dan meningkatkan efisiensi sumber daya.</p>
+                </div>
+                <div class="info-card">
+                    <i class="fas fa-recycle"></i>
+                    <h3>Kenapa Daur Ulang?</h3>
+                    <p>Daur ulang mengurangi limbah, menghemat energi, mengurangi polusi, dan melestarikan sumber daya alam untuk generasi mendatang.</p>
+                </div>
+                <div class="info-card">
+                    <i class="fas fa-leaf"></i>
+                    <h3>Dampak Positif</h3>
+                    <p>Setiap ton material daur ulang dapat menghemat energi hingga 95% dibandingkan memproduksi dari bahan baru.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Marketplace Section -->
+    <section id="marketplace" class="marketplace-section">
+        <div class="container">
+            <h2 class="section-title"><i class="fas fa-store"></i> Marketplace Barang Daur Ulang</h2>
+            <div class="products-grid" id="productsContainer">
+                <!-- Products will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Add Product Section -->
+    <section id="tambah-produk" class="add-product-section">
+        <div class="container">
+            <h2 class="section-title"><i class="fas fa-plus-circle"></i> Tambah Produk Baru</h2>
+            <form id="addProductForm" class="product-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="nama">Nama Produk *</label>
+                        <input type="text" id="nama" required placeholder="Contoh: Botol Plastik PET">
+                    </div>
+                    <div class="form-group">
+                        <label for="kategori">Kategori *</label>
+                        <select id="kategori" required>
+                            <option value="">Pilih Kategori</option>
+                            <option value="plastik">Plastik</option>
+                            <option value="kertas">Kertas</option>
+                            <option value="logam">Logam</option>
+                            <option value="kaca">Kaca</option>
+                            <option value="elektronik">Elektronik</option>
+                            <option value="lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="harga">Harga (Rp) *</label>
+                        <input type="number" id="harga" required min="0" placeholder="5000">
+                    </div>
+                    <div class="form-group">
+                        <label for="stok">Stok *</label>
+                        <input type="number" id="stok" required min="0" placeholder="100">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="deskripsi">Deskripsi Produk</label>
+                    <textarea id="deskripsi" rows="4" placeholder="Deskripsi lengkap produk..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gambar">Gambar Produk</label>
+                    <input type="file" id="gambar" accept="image/*">
+                </div>
+                
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-upload"></i> Tambah Produk
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Cart Section -->
+    <section id="keranjang" class="cart-section">
+        <div class="container">
+            <h2 class="section-title"><i class="fas fa-shopping-cart"></i> Keranjang Belanja</h2>
+            <div class="cart-container" id="cartContainer">
+                <!-- Cart items will be loaded here -->
+            </div>
+            <div class="cart-actions">
+                <button onclick="checkout()" class="btn-primary" id="checkoutBtn">
+                    <i class="fas fa-check"></i> Checkout
+                </button>
+                <button onclick="clearCart()" class="btn-secondary">
+                    <i class="fas fa-trash"></i> Kosongkan Keranjang
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Report Section -->
+    <section id="laporan" class="report-section">
+        <div class="container">
+            <h2 class="section-title"><i class="fas fa-chart-bar"></i> Laporan Transaksi</h2>
+            <div class="report-actions">
+                <button onclick="downloadPDF()" class="btn-report">
+                    <i class="fas fa-file-pdf"></i> Download PDF
+                </button>
+                <button onclick="downloadCSV()" class="btn-report">
+                    <i class="fas fa-file-csv"></i> Download CSV
+                </button>
+                <button onclick="downloadExcel()" class="btn-report">
+                    <i class="fas fa-file-excel"></i> Download Excel
+                </button>
+            </div>
+            
+            <div class="transactions-table">
+                <h3>Riwayat Transaksi</h3>
+                <table id="transactionsTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Produk</th>
+                            <th>Pembeli</th>
+                            <th>Jumlah</th>
+                            <th>Total</th>
+                            <th>Tanggal</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsBody">
+                        <!-- Transactions will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-recycle"></i>
+                    <h3>Marketplace Daur Ulang</h3>
+                    <p>Mendukung Tujuan Pembangunan Berkelanjutan 12</p>
+                </div>
+                <div class="footer-info">
+                    <p><i class="fas fa-envelope"></i> info@daurulangmarket.com</p>
+                    <p><i class="fas fa-phone"></i> (021) 1234-5678</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2024 Marketplace Barang Daur Ulang. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

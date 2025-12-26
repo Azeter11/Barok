@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Marketplace Daur Ulang</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <i class="fas fa-recycle login-icon"></i>
+                <h1>Daftar Akun Baru</h1>
+                <p class="subtitle">Bergabung dengan Marketplace Daur Ulang</p>
+            </div>
+            
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="nama"><i class="fas fa-user"></i> Nama Lengkap *</label>
+                    <input type="text" id="nama" name="nama" required 
+                           placeholder="Masukkan nama lengkap">
+                </div>
+                
+                <div class="form-group">
+                    <label for="username"><i class="fas fa-user-tag"></i> Username *</label>
+                    <input type="text" id="username" name="username" required 
+                           placeholder="Pilih username" minlength="3">
+                    <small id="usernameFeedback" class="feedback"></small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email"><i class="fas fa-envelope"></i> Email *</label>
+                    <input type="email" id="email" name="email" required 
+                           placeholder="Masukkan email aktif">
+                    <small id="emailFeedback" class="feedback"></small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="telepon"><i class="fas fa-phone"></i> Nomor Telepon</label>
+                    <input type="tel" id="telepon" name="telepon" 
+                           placeholder="Contoh: 081234567890">
+                </div>
+                
+                <div class="form-group">
+                    <label for="alamat"><i class="fas fa-home"></i> Alamat</label>
+                    <textarea id="alamat" name="alamat" rows="2" 
+                              placeholder="Masukkan alamat lengkap"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password"><i class="fas fa-lock"></i> Password *</label>
+                    <input type="password" id="password" name="password" required 
+                           placeholder="Minimal 6 karakter" minlength="6">
+                    <small class="hint">Password minimal 6 karakter</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmPassword"><i class="fas fa-lock"></i> Konfirmasi Password *</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required 
+                           placeholder="Ketik ulang password">
+                    <small id="passwordFeedback" class="feedback"></small>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-register">
+                        <i class="fas fa-user-plus"></i> Daftar Sekarang
+                    </button>
+                </div>
+                
+                <div class="register-links">
+                    <p>Sudah punya akun? <a href="/">Login di sini</a></p>
+                </div>
+            </form>
+        </div>
+        
+        <div class="login-footer">
+            <p>© 2024 Marketplace Barang Daur Ulang - Mendukung SDG12</p>
+        </div>
+    </div>
+    
+    <script>
+        // Check username availability
+        document.getElementById('username').addEventListener('blur', async function() {
+            const username = this.value;
+            const feedback = document.getElementById('usernameFeedback');
+            
+            if (username.length < 3) {
+                feedback.textContent = 'Username minimal 3 karakter';
+                feedback.style.color = '#f44336';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/check-username/${username}`);
+                const data = await response.json();
+                
+                if (data.available) {
+                    feedback.textContent = '✓ Username tersedia';
+                    feedback.style.color = '#4CAF50';
+                } else {
+                    feedback.textContent = '✗ Username sudah digunakan';
+                    feedback.style.color = '#f44336';
+                }
+            } catch (error) {
+                console.error('Error checking username:', error);
+            }
+        });
+        
+        // Check email availability
+        document.getElementById('email').addEventListener('blur', async function() {
+            const email = this.value;
+            const feedback = document.getElementById('emailFeedback');
+            
+            // Simple email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                feedback.textContent = 'Format email tidak valid';
+                feedback.style.color = '#f44336';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/check-email/${email}`);
+                const data = await response.json();
+                
+                if (data.available) {
+                    feedback.textContent = '✓ Email tersedia';
+                    feedback.style.color = '#4CAF50';
+                } else {
+                    feedback.textContent = '✗ Email sudah terdaftar';
+                    feedback.style.color = '#f44336';
+                }
+            } catch (error) {
+                console.error('Error checking email:', error);
+            }
+        });
+        
+        // Password confirmation check
+        document.getElementById('confirmPassword').addEventListener('input', function() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = this.value;
+            const feedback = document.getElementById('passwordFeedback');
+            
+            if (confirmPassword === '') {
+                feedback.textContent = '';
+                return;
+            }
+            
+            if (password === confirmPassword) {
+                feedback.textContent = '✓ Password cocok';
+                feedback.style.color = '#4CAF50';
+            } else {
+                feedback.textContent = '✗ Password tidak cocok';
+                feedback.style.color = '#f44336';
+            }
+        });
+        
+        // Register form submission
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const nama = document.getElementById('nama').value;
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const telepon = document.getElementById('telepon').value;
+            const alamat = document.getElementById('alamat').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // Validation
+            if (password !== confirmPassword) {
+                alert('Password dan konfirmasi password tidak cocok');
+                return;
+            }
+            
+            if (password.length < 6) {
+                alert('Password minimal 6 karakter');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username,
+                        password,
+                        nama,
+                        email,
+                        telepon,
+                        alamat
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    window.location.href = '/';
+                } else {
+                    alert('Registrasi gagal: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat registrasi');
+            }
+        });
+    </script>
+    
+    <style>
+        .feedback {
+            display: block;
+            margin-top: 5px;
+            font-size: 12px;
+        }
+        
+        .hint {
+            display: block;
+            margin-top: 5px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .btn-register {
+            width: 100%;
+            padding: 14px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-register:hover {
+            background: #388E3C;
+        }
+        
+        .btn-register i {
+            margin-right: 8px;
+        }
+        
+        .register-links {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .register-links a {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .register-links a:hover {
+            text-decoration: underline;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: inherit;
+            resize: vertical;
+        }
+        
+        .login-card {
+            max-width: 450px;
+        }
+    </style>
+</body>
+</html>
