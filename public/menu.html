@@ -76,9 +76,15 @@
     </section>
 
     <!-- Marketplace Section -->
-    <section id="marketplace" class="marketplace-section">
         <div class="container">
             <h2 class="section-title"><i class="fas fa-store"></i> Marketplace Barang Daur Ulang</h2>
+            <section id="marketplace" class="marketplace-section">
+                <div class="search-container" style="margin: 20px 0; display: flex; gap: 10px;">
+                    <input type="text" id="searchInput" placeholder="Cari produk daur ulang..." style="padding: 10px; flex: 1; border-radius: 5px; border: 1px solid #ccc;">
+                    <button onclick="handleSearch()" style="padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        Cari
+                    </button>
+                </div>
             <div class="products-grid" id="productsContainer">
                 <!-- Products will be loaded here -->
             </div>

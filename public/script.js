@@ -99,6 +99,19 @@ function setupNavigation() {
     });
 }
 
+// Fungsi untuk memicu pencarian
+function handleSearch() {
+    const keyword = document.getElementById('searchInput').value;
+    loadProducts(keyword); // Panggil fungsi load dengan kata kunci
+}
+
+// Tambahkan event listener untuk tombol "Enter" pada input
+document.getElementById('searchInput').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        handleSearch();
+    }
+});
+
 // Load all data
 async function loadAllData() {
     await loadProducts();
@@ -107,15 +120,32 @@ async function loadAllData() {
 }
 
 // Load products
-async function loadProducts() {
+// Load products (DIPERBAIKI agar mendukung Search)
+async function loadProducts(search = '') {
     try {
-        const response = await fetch('/products');
+        // Jika ada parameter search, tambahkan ke URL
+        const url = search ? `/products?search=${encodeURIComponent(search)}` : '/products';
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        // Simpan data ke variabel global agar bisa diakses displayProducts
         products = await response.json();
+        
+        // Panggil fungsi display lama Anda (CSS tetap terjaga)
         displayProducts();
+        
     } catch (error) {
         console.error('Error loading products:', error);
         alert('Gagal memuat produk');
     }
+}
+
+// Fungsi bantu untuk tombol "Cari" di HTML
+function handleSearch() {
+    const keyword = document.getElementById('searchInput').value;
+    loadProducts(keyword);
 }
 
 // Display products

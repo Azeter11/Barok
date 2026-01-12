@@ -71,6 +71,66 @@ async function loadAllProductsAdmin() {
     `).join('');
 }
 
+// --- Fungsi untuk memuat transaksi di panel admin ---
+async function loadAllTransactionsAdmin() {
+    try {
+        const res = await fetch('/transactions');
+        if (!res.ok) throw new Error('Gagal mengambil data transaksi');
+        
+        const transactions = await res.json();
+        const tbody = document.getElementById('adminTransactionsBody');
+        
+        if (!tbody) return;
+
+        if (transactions.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Belum ada transaksi</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = transactions.map(t => `
+            <tr>
+                <td>#${t.id}</td>
+                <td>${new Date(t.tanggal_transaksi).toLocaleString('id-ID')}</td>
+                <td>${t.nama_user}</td>
+                <td>${t.nama_produk}</td>
+                <td>${t.jumlah}</td>
+                <td>Rp ${parseFloat(t.total_harga).toLocaleString('id-ID')}</td>
+                <td><span class="status-badge status-${t.status}">${t.status.toUpperCase()}</span></td>
+                <td>
+                    ${t.status === 'pending' ? `
+                        <button class="btn-action btn-check" onclick="updateTransactionStatus(${t.id}, 'completed')" title="Selesaikan">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    ` : '-'}
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error("Error loading admin transactions:", error);
+    }
+}
+
+// --- Fungsi Update Status (Tambahkan ini juga) ---
+async function updateTransactionStatus(id, status) {
+    if (!confirm(`Ubah status transaksi #${id} menjadi ${status}?`)) return;
+    
+    try {
+        const res = await fetch(`/transactions/${id}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: status })
+        });
+        
+        if (res.ok) {
+            alert('Status transaksi berhasil diperbarui');
+            loadAllTransactionsAdmin(); // Refresh tabel
+            loadStats(); // Refresh statistik dashboard
+        }
+    } catch (error) {
+        alert('Gagal memperbarui status');
+    }
+}
+
 async function deleteProduct(id) {
     if (!confirm('Hapus produk ini?')) return;
     const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });

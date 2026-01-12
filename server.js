@@ -24,7 +24,7 @@ const dbConfig = {
     host: 'localhost',
     user: 'root',
     password: '', // Sesuaikan dengan password MySQL Anda
-    database: 'daurulang_new1'
+    database: 'daurulang_new3'
 };
 
 // Deklarasikan variabel db di scope global (paling atas)
@@ -169,11 +169,10 @@ app.post('/register', async (req, res) => {
     }
 });
 
-// ==================== LOGIN (DIPERBAIKI) ====================
+// ==================== LOGIN (SINKRON DENGAN DATABASE) ====================
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     
-    // Validasi input
     if (!username || !password) {
         return res.status(400).json({ 
             success: false, 
@@ -184,7 +183,7 @@ app.post('/login', async (req, res) => {
     try {
         const connection = await getConnection();
         
-        // Get user with hashed password
+        // Ambil user. Gunakan kolom PASSWORD (kapital) sesuai SQL
         const [rows] = await connection.execute(
             'SELECT * FROM users WHERE username = ?',
             [username]
@@ -200,9 +199,19 @@ app.post('/login', async (req, res) => {
         }
         
         const user = rows[0];
+
+        // LOGIKA PENGECEKAN:
+        // Gunakan user.PASSWORD (kapital) karena di SQL anda menulisnya PASSWORD
+        const hashFromDb = user.PASSWORD || user.password; 
+
+        if (!hashFromDb) {
+            return res.status(500).json({
+                success: false,
+                message: 'Data password di database tidak ditemukan'
+            });
+        }
         
-        // Verify password using bcrypt
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValid = await bcrypt.compare(password, hashFromDb);
         
         if (!isPasswordValid) {
             return res.json({ 
@@ -211,7 +220,6 @@ app.post('/login', async (req, res) => {
             });
         }
         
-        // Login successful
         res.json({ 
             success: true, 
             user: {
@@ -236,43 +244,53 @@ app.post('/login', async (req, res) => {
 
 // Ganti /api/products menjadi /products agar sesuai dengan script.js
 app.get('/products', async (req, res) => {
+    const searchTerm = req.query.search; // Mengambil kata kunci dari URL (?search=...)
+    
     try {
         const connection = await getConnection();
-        // Tambahkan JOIN ke users agar kolom 'penjual' di marketplace tidak kosong
-        const [rows] = await connection.execute(`
+        let sql = `
             SELECT p.*, u.nama as penjual 
             FROM products p 
-            LEFT JOIN users u ON p.user_id = u.id 
-            ORDER BY p.id DESC
-        `);
+            LEFT JOIN users u ON p.created_by = u.id
+        `;
+        let params = [];
+
+        // Jika ada kata kunci pencarian, tambahkan klausa WHERE
+        if (searchTerm) {
+            sql += ` WHERE p.nama_produk LIKE ? OR p.kategori LIKE ? OR p.deskripsi LIKE ?`;
+            const likeTerm = `%${searchTerm}%`;
+            params = [likeTerm, likeTerm, likeTerm];
+        }
+
+        sql += ` ORDER BY p.id DESC`;
+
+        const [rows] = await connection.execute(sql, params);
         await connection.end();
         res.json(rows);
     } catch (error) {
-        res.status(500).json({ message: 'Gagal mengambil data' });
+        console.error("Search Error:", error);
+        res.status(500).json({ message: 'Gagal mengambil data produk' });
     }
 });
 
 // POST: Tambah produk baru
-// Ubah /api/products menjadi /products agar sinkron dengan script.js
 app.post('/products', upload.single('gambar'), async (req, res) => {
+    // SESUAIKAN: user_id -> created_by, nama -> nama_produk
     const { user_id, nama, kategori, harga, stok, deskripsi } = req.body;
     const gambar = req.file ? req.file.filename : null;
     
-    // Tambahkan validasi sederhana
     if (!user_id) {
         return res.status(401).json({ success: false, message: 'User ID tidak ditemukan' });
     }
 
     try {
         const connection = await getConnection();
+        // SESUAIKAN KOLOM: (created_by, nama_produk, ...)
         await connection.execute(
-            'INSERT INTO products (user_id, nama, kategori, harga, stok, deskripsi, gambar) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            'INSERT INTO products (created_by, nama_produk, kategori, harga, stok, deskripsi, gambar) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [user_id, nama, kategori, harga, stok, deskripsi, gambar]
         );
-        // Pastikan tidak menutup koneksi jika menggunakan pool, 
-        // tapi jika menggunakan getConnection biasa seperti kode Anda:
         await connection.end(); 
-        
         res.json({ success: true, message: 'Produk berhasil ditambahkan' });
     } catch (error) {
         console.error("Database Error:", error);
@@ -281,19 +299,33 @@ app.post('/products', upload.single('gambar'), async (req, res) => {
 });
 
 // PUT: Update produk
-app.put('/api/products/:id', async (req, res) => {
+// PUT: Update produk
+// Menghilangkan '/api' agar konsisten dengan route GET/POST /products
+app.put('/products/:id', async (req, res) => {
     const { id } = req.params;
     const { nama, kategori, harga, stok, deskripsi } = req.body;
+    
     try {
         const connection = await getConnection();
+        
+        // Menggunakan nama_produk sesuai struktur tabel products
         await connection.execute(
-            'UPDATE products SET nama=?, kategori=?, harga=?, stok=?, deskripsi=? WHERE id=?',
+            'UPDATE products SET nama_produk=?, kategori=?, harga=?, stok=?, deskripsi=? WHERE id=?',
             [nama, kategori, harga, stok, deskripsi, id]
         );
+        
         await connection.end();
-        res.json({ success: true });
+        
+        res.json({ 
+            success: true, 
+            message: 'Produk berhasil diperbarui' 
+        });
     } catch (error) {
-        res.status(500).json({ message: 'Gagal update produk' });
+        console.error('Update Error:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Gagal update produk' 
+        });
     }
 });
 
@@ -407,12 +439,84 @@ app.delete('/cart/:id', async (req, res) => {
     }
 });
 
+app.get('/report/pdf', async (req, res) => {
+    try {
+        const connection = await getConnection();
+        const [rows] = await connection.execute('SELECT * FROM transactions');
+        await connection.end();
+
+        const doc = new PDFDocument();
+        
+        // Atur Header agar browser mengenali ini sebagai file unduhan
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'attachment; filename=laporan-transaksi.pdf');
+
+        doc.pipe(res); // Mengirim PDF langsung ke respon browser
+        doc.fontSize(20).text('Laporan Transaksi Daur Ulang', { align: 'center' });
+        doc.moveDown();
+
+        rows.forEach((item, index) => {
+            doc.fontSize(12).text(`${index + 1}. Produk ID: ${item.product_id} - Total: Rp${item.total_harga}`);
+        });
+
+        doc.end();
+    } catch (error) {
+        res.status(500).send("Gagal membuat PDF");
+    }
+});
+
+app.get('/report/csv', async (req, res) => {
+    try {
+        const connection = await getConnection();
+        const [rows] = await connection.execute('SELECT * FROM transactions');
+        await connection.end();
+
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename=laporan.csv');
+
+        fastcsv.write(rows, { headers: true }).pipe(res);
+    } catch (error) {
+        res.status(500).send("Gagal membuat CSV");
+    }
+});
+
+app.get('/report/excel', async (req, res) => {
+    try {
+        const connection = await getConnection();
+        const [rows] = await connection.execute('SELECT * FROM transactions');
+        await connection.end();
+
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Transaksi');
+
+        worksheet.columns = [
+            { header: 'ID', key: 'id', width: 10 },
+            { header: 'Produk ID', key: 'product_id', width: 15 },
+            { header: 'Jumlah', key: 'jumlah', width: 10 },
+            { header: 'Total Harga', key: 'total_harga', width: 15 }
+        ];
+
+        worksheet.addRows(rows);
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename=laporan.xlsx');
+
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (error) {
+        res.status(500).send("Gagal membuat Excel");
+    }
+});
+
 // GET: Riwayat Transaksi (Untuk Tampilan Laporan)
 app.get('/transactions', async (req, res) => {
     try {
         const connection = await getConnection();
         const [rows] = await connection.execute(`
-            SELECT t.*, p.nama as nama_produk, u.nama as nama_user 
+            SELECT 
+                t.*, 
+                p.nama_produk, -- Perbaikan: p.nama -> p.nama_produk
+                u.nama as nama_user 
             FROM transactions t
             JOIN products p ON t.product_id = p.id
             JOIN users u ON t.user_id = u.id
@@ -421,6 +525,7 @@ app.get('/transactions', async (req, res) => {
         await connection.end();
         res.json(rows);
     } catch (error) {
+        console.error("Error Transactions:", error);
         res.status(500).json({ error: 'Gagal memuat transaksi' });
     }
 });
@@ -439,6 +544,45 @@ app.post('/transactions', async (req, res) => {
         await connection.execute(
             'UPDATE products SET stok = stok - ? WHERE id = ?',
             [jumlah, product_id]
+        );
+        await connection.end();
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// GET: Semua transaksi untuk Admin
+app.get('/transactions', async (req, res) => {
+    try {
+        const connection = await getConnection();
+        const [rows] = await connection.execute(`
+            SELECT 
+                t.*, 
+                p.nama_produk, 
+                u.nama as nama_user 
+            FROM transactions t
+            JOIN products p ON t.product_id = p.id
+            JOIN users u ON t.user_id = u.id
+            ORDER BY t.tanggal_transaksi DESC
+        `);
+        await connection.end();
+        res.json(rows);
+    } catch (error) {
+        console.error("Fetch Transactions Error:", error);
+        res.status(500).json({ error: 'Gagal memuat transaksi' });
+    }
+});
+
+// PATCH: Update Status Transaksi
+app.patch('/transactions/:id/status', async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    try {
+        const connection = await getConnection();
+        await connection.execute(
+            'UPDATE transactions SET status = ? WHERE id = ?',
+            [status, id]
         );
         await connection.end();
         res.json({ success: true });
